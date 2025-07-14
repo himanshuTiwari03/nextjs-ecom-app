@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: "http://fakestoreapi.in/api/",
+  baseURL: "https://fakestoreapi.in/api/",
   headers: {
     'Content-Type': 'application/json',
   },
