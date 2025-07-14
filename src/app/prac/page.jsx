@@ -1,0 +1,239 @@
+"use client";
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
+import Loader from "../components/Loader";   // Assuming you have a Loader component
+
+export default function Cart() {
+    const SHIPPING_COST = 5.0;
+    const [subtotal, setSubtotal] = useState(0);
+    const [total, setTotal] = useState(0);
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [paypalError, setPaypalError] = useState("");
+    const [cart, setCart] = useState([]);
+
+    // Load cart from localStorage when component mounts
+    useEffect(() => {
+        const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
+        setCart(storedCart);
+    }, []); // This runs only once when the component mounts
+
+    // Recalculate total and subtotal whenever `cart` changes
+    useEffect(() => {
+        const calculatedSubtotal = calculateTotal();
+        setSubtotal(calculatedSubtotal);
+
+        const totalWithShipping = calculatedSubtotal + SHIPPING_COST;
+        setTotal(totalWithShipping);
+    }, [cart]); // This hook runs whenever `cart` changes
+
+    const createOrder = (data, actions) => {
+        return actions.order.create({
+            purchase_units: [
+                {
+                    amount: {
+                        value: total.toFixed(2),
+                        currency_code: "USD"
+                    },
+                    description: "Farm Market Order"
+                }
+            ]
+        });
+    };
+
+    const onApprove = async (data, actions) => {
+        setIsProcessing(true);
+        try {
+            const order = await actions.order.get();
+
+            const payerName = order.payer?.name?.given_name || "";
+            const payerEmail = order.payer?.email_address || "";
+
+            const paymentData = {
+                name: payerName,
+                email: payerEmail,
+                amount: total.toFixed(2),
+                orderID: data.orderID
+            };
+
+            const response = await fetch("/api/payment", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(paymentData)
+            });
+
+            if (!response.ok) {
+                throw new Error("Payment processing failed");
+            }
+
+            alert("Payment successful!");
+        } catch (error) {
+            console.error("Payment failed:", error);
+            setPaypalError("Payment failed. Please try again.");
+        } finally {
+            setIsProcessing(false);
+        }
+    };
+
+    const onError = (err) => {
+        console.error("PayPal error:", err);
+        setPaypalError("An error occurred with PayPal. Please try again.");
+    };
+
+
+    // Update the cart in localStorage
+    const updateCart = (updatedCart) => {
+        localStorage.setItem("cart", JSON.stringify(updatedCart));
+        setCart(updatedCart);
+    };
+
+    // Increase quantity
+    const incrementQuantity = (id) => {
+        const updatedCart = cart.map((item) =>
+            item.id === id ? { ...item, quantity: item.quantity + 1 } : item
+        );
+        updateCart(updatedCart);
+    };
+
+    // Decrease quantity
+    const decrementQuantity = (id) => {
+        const updatedCart = cart.map((item) =>
+            item.id === id && item.quantity > 1 ? { ...item, quantity: item.quantity - 1 } : item
+        );
+        updateCart(updatedCart);
+    };
+
+    // Remove item from cart
+    const removeFromCart = (id) => {
+        const updatedCart = cart.filter(item => item.id !== id);
+        updateCart(updatedCart);
+        toast.success('Item removed from cart!');
+    };
+
+    // Calculate the total price
+    const calculateTotal = () => {
+        return cart.reduce((total, item) => total + item.price * item.quantity, 0);
+    };
+
+    return (
+        <>
+            {isProcessing && <Loader />}
+            <div className="min-h-screen bg-gray-50 p-6">
+                <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">Your Cart</h2>
+
+                {cart.length === 0 ? (
+                    <p className="text-center text-gray-600">Your cart is empty.</p>
+                ) : (
+                    <div className="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow-md">
+                        <ul className="space-y-4 mb-3 ">
+                            {cart.map((item) => (
+                                <div key={item.id}>
+                                    <li
+                                        key={item.id}
+                                        className="grid grid-cols-3 items-center gap-4 pb-4"
+                                    >
+                                        <div className="flex items-center space-x-4 col-span-2 ">
+                                            <Image
+                                                src={item.image}
+                                                alt={item.title}
+                                                width={80}
+                                                height={80}
+                                                className="rounded"
+                                            />
+                                            <div>
+                                                <h3 className="text-lg font-semibold">{item.title}</h3>
+                                                <p className="text-gray-700">${item.price.toFixed(2)}</p>
+                                                <p className="text-sm text-gray-500">
+                                                    Quantity: {item.quantity}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <div className="text-right">
+                                                ${(item.price * item.quantity).toFixed(2)}
+                                            </div>
+
+
+                                        </div>
+                                    </li>
+
+                                    {/* Quantity Controls */}
+                                    <li className=" border-b pb-4">
+                                        <div className="flex justify-center items-center space-x-2 sm:justify-end">
+                                            <button
+                                                onClick={() => decrementQuantity(item.id)}
+                                                className="bg-gray-300 hover:bg-gray-400 text-black font-semibold py-1 px-3 rounded"
+                                            >
+                                                -
+                                            </button>
+                                            <span className="text-xl font-semibold">{item.quantity}</span>
+                                            <button
+                                                onClick={() => incrementQuantity(item.id)}
+                                                className="bg-gray-300 hover:bg-gray-400 text-black font-semibold py-1 px-3 rounded"
+                                            >
+                                                +
+                                            </button>
+                                            <button
+                                                onClick={() => removeFromCart(item.id)}
+                                                className="text-red-600 font-semibold hover:text-red-800"
+                                            >
+                                                Remove
+                                            </button>
+                                        </div>
+                                    </li>
+                                </div>
+                            ))}
+                        </ul>
+
+                        {/* Price Summary */}
+                        <div className="space-y-2 mb-6">
+                            <div className="flex justify-between text-gray-600">
+                                <span>Subtotal</span>
+                                <span>${subtotal.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between text-gray-600">
+                                <span>Shipping</span>
+                                <span>${SHIPPING_COST.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between font-bold text-lg pt-2 border-t">
+                                <span>Total</span>
+                                <span>${total.toFixed(2)}</span>
+                            </div>
+                        </div>
+
+                        {/* PayPal Errors */}
+                        {paypalError && (
+                            <div className="mb-4 p-3 bg-red-100 text-red-700 rounded text-sm">
+                                {paypalError}
+                            </div>
+                        )}
+
+                        {/* PayPal Integration */}
+                        <PayPalScriptProvider
+                            options={{
+                                clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "",
+                                currency: "USD",
+                                intent: "capture"
+                            }}
+                        >
+                            <PayPalButtons
+                                createOrder={createOrder}
+                                onApprove={onApprove}
+                                onError={onError}
+                                style={{ layout: "vertical" }}
+                                disabled={isProcessing}
+                            />
+                        </PayPalScriptProvider>
+
+                        <p className="text-xs text-gray-500 text-center mt-4">
+                            By completing this purchase, you agree to our terms and
+                            conditions.
+                        </p>
+                    </div>
+                )}
+            </div>
+        </>
+    );
+}
