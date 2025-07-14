@@ -2,15 +2,11 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import React, { useEffect, useState } from 'react'
-import { HiOutlineEye } from "react-icons/hi";
-import api from '../services/api';
 import { getCategoryService } from '../services/products';
 import Loader from '../components/Loader';
 import { toast } from 'react-toastify';
-import { authHook } from '../hooks/authHook';
 
 export default function StorePage() {
-  authHook(['admin', 'user']);
     const [category, setCategory] = useState([]);
     const [products, setProducts] = useState([]);
     const [categorySelected, setCategorySelected] = useState('');

@@ -4,9 +4,7 @@ import { useParams } from 'next/navigation';
 import React, { use, useEffect, useState } from 'react'
 import Loader from '../../../components/Loader';
 import { toast } from 'react-toastify';
-import { authHook } from '@/app/hooks/authHook';
 export default function ProductDetailsPage() {
-  authHook(['admin', 'user']);
     const params = useParams();
     const productId = params["product-id"];
 

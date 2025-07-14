@@ -142,11 +142,8 @@ import Loader from "../components/Loader";   // Assuming you have a Loader compo
 import { BiTrash } from "react-icons/bi";
 import { BiPlus } from "react-icons/bi";
 import { BiMinus } from "react-icons/bi";
-import { FaPlus } from "react-icons/fa";
 import { toast } from "react-toastify";
-import { authHook } from "../hooks/authHook";
 export default function Cart() {
-  authHook(['admin', 'user']);
     const SHIPPING_COST = 5.0;
     const [subtotal, setSubtotal] = useState(0);
     const [total, setTotal] = useState(0);
