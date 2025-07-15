@@ -5,7 +5,7 @@ export function middleware(request: NextRequest) {
   const isAuth = request.cookies.get("userCookie")?.value;
   const currentPath = request.nextUrl.pathname;
 
-  console.log("Middleware - Path:", currentPath, "Auth:", isAuth);
+  // console.log("Middleware - Path:", currentPath, "Auth:", isAuth);
 
   const protectedRoutes = ["/cart", "/store"];
   const isProtected = protectedRoutes.some((route) =>

@@ -5,7 +5,6 @@ import Image from 'next/image';
 import Loader from '../components/Loader';
 import { toast } from 'react-toastify';
 import Link from 'next/link';
-import UserContext from '@/context/UserContext';
 
 export default function RecentlyAdded() {
     // const [ user,setUser] = useContext(UserContext);

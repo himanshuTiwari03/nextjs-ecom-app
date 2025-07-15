@@ -6,12 +6,14 @@ import { BiCart } from 'react-icons/bi';
 import { BiLogOut } from 'react-icons/bi';
 import { BiShoppingBag } from 'react-icons/bi';
 import { BiHome } from 'react-icons/bi';
+import ConfirmDialog from './ConfirmDialog';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef();
   const [loggedUser, setLoggedUser] = useState('');
   const router = useRouter();
+  const [showDialog, setShowDialog] = useState(false);
 
   // Close on outside click
   useEffect(() => {
@@ -43,8 +45,15 @@ export default function Navbar() {
   function handleLogout() {
     localStorage.removeItem('user');
     localStorage.removeItem('cart');
+      // ✅ Delete cookie manually
+  document.cookie = "userCookie=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
     router.push('/');
-    window.reload();
+
+  }
+
+  function handleDelete(){
+    handleLogout();
+    setShowDialog(false);
   }
 
   return (
@@ -81,7 +90,7 @@ export default function Navbar() {
               {!loggedUser ? (
     <Link href="/login" className="hover:text-gray-300">Login</Link>
   ) : (
-    <Link href="/" className="hover:text-gray-300" onClick={handleLogout}><BiLogOut size={20}/></Link>
+    <button className="hover:text-gray-300" onClick={()=>setShowDialog(true)} ><BiLogOut size={20}/></button>
   )}
   
             </div>
@@ -89,23 +98,33 @@ export default function Navbar() {
  
           }
 
-        </div>
+        </div>  
 
         {/* Mobile Menu */}
         {isOpen && (
-          <div className="sm:hidden flex flex-col space-y-2 bg-gray-800 p-4 shadow-md absolute left-0 top-full w-full z-50">
+          <div className="sm:hidden flex flex-col space-y-2 bg-gray-800 p-4 shadow-md absolute left-0 top-full w-full z-50" 
+            onClick={() => setIsOpen(false)}>
            <Link href="/" className="hover:text-gray-300">Home</Link>
               <Link href="/store" className="hover:text-gray-300">Products</Link>
               <Link href="/cart" className="hover:text-gray-300">Cart</Link>
               {!loggedUser ? (
     <Link href="/login" className="hover:text-gray-300">Login</Link>
   ) : (
-    <Link href="/" className="hover:text-gray-300" onClick={handleLogout}>Logout</Link>
+    <button onClick={()=>setShowDialog(true)} className='text-left'>Logout</button>
   )}
           </div>
         )}
       </nav>
-    </>
+
+      <ConfirmDialog
+        isOpen={showDialog}
+        title="Logout?"
+        subtitle="Are you sure you want to logout? This action cannot be undone.."
+        confirmLabel="Logout"
+        cancelLabel="Cancel"
+        onConfirm={handleDelete}
+        onCancel={() => setShowDialog(false)}
+      /> </>
   );
-}
+} 
 

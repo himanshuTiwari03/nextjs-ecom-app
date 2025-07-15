@@ -143,6 +143,8 @@ import { BiTrash } from "react-icons/bi";
 import { BiPlus } from "react-icons/bi";
 import { BiMinus } from "react-icons/bi";
 import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
+import OrderSuccess from "../components/OrderSucess";
 export default function Cart() {
     const SHIPPING_COST = 5.0;
     const [subtotal, setSubtotal] = useState(0);
@@ -152,6 +154,7 @@ export default function Cart() {
     const [paypalError, setPaypalError] = useState("");
     const [cart, setCart] = useState([]);
     const [orderSuccess, setOrderSuccess] = useState(false);
+    const router = useRouter();
     // Load cart from localStorage when component mounts
     useEffect(() => {
         const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
@@ -209,6 +212,12 @@ export default function Cart() {
                 throw new Error("Payment processing failed");
             }
             setOrderSuccess(true);
+            localStorage.setItem("orders", JSON.stringify([cart]));
+            localStorage.removeItem("cart");
+            setCart([]);
+            
+            
+            
            // alert("Payment successful!");
         } catch (error) {
             console.error("Payment failed:", error);
@@ -263,9 +272,10 @@ export default function Cart() {
                     {isProcessing && <Loader />}
                     {isloading && <Loader />}
         {orderSuccess ? (
-            <div className="min-h-screen bg-gray-50 p-6">
-                <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">Order Placed Successfully!</h2>
-            </div>
+            // <div className="min-h-screen bg-gray-50 p-6">
+            //     <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">Order Placed Successfully!</h2>
+            // </div>
+            <OrderSuccess />
         ) : (
           <div className="min-h-screen bg-gray-50 p-6">
           <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">Your Cart</h2>
