@@ -5,7 +5,7 @@ import React, { useEffect, useState } from 'react';
 import Table from '../components/Table';
 import Loader from '../components/Loader';
 import axios from 'axios';
-
+import style from './page.module.css';
 export default function HomePage() {
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -54,7 +54,8 @@ const productColumns = [
        <Loader />
    ) : (
     <main className="container mx-auto p-6">
-    <h1 className="text-2xl font-bold mb-4">Product Table with Pagination</h1>
+      {/* separate css page  */}
+    <h1 className={`text-2xl font-bold mb-4 heading ${style.heading}`}>Product Table with Pagination</h1>
     <Table data={products} columns={productColumns}/>
   </main>
    )}

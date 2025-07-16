@@ -1,5 +1,4 @@
 'use client';
-import RecentlyAdded from "../RecentlyAdded/page";
 import {
   DndContext,
   closestCenter,
