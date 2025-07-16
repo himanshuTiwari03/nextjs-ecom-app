@@ -15,6 +15,7 @@ export function middleware(request: NextRequest) {
       role = parsed.role;
     //  token = parsed.token;
     } catch (e) {
+      console.log("Error parsing userCookie:", e);
     }
   }
 
